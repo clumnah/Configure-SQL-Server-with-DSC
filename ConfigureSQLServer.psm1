@@ -702,18 +702,26 @@ function Set-TempdbConfiguration
 			Write-Host "Total SIZE OF temp db = 0.75 OF the total drive size"
 			Write-Host "DATA Files = 0.8 OF the Total SIZE OF temp db"
 			Write-Host "LOG files = 0.2 OF the Total SIZE OF temp db"
-			$Query = "SELECT name, physical_name FROM sys.master_files WHERE database_id = DB_ID(N'tempdb') AND file_id = 1"
+			$Query = "SELECT name, physical_name FROM sys.master_files WHERE database_id = DB_ID(N'tempdb') AND type = 0"
 			$results = Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $Query -Database "master" -Verbose -ConnectionTimeout 90 -QueryTimeout 90
-			$DeviceID = $results.physical_name.substring(0, 2)
+
+			$DeviceID = $results.physical_name[0].substring(0, 2)
 			if ($DeviceID -ne "C:")
 			{
-				$TempDBDriveSize = Get-WMIObject Win32_LogicalDisk -filter "DeviceID = '$DeviceID'" -ComputerName $ServerName | %{ $_.Size }
+				$TempDBDriveSize = Get-WmiObject Win32_Volume -ComputerName $ServerName  | where {$_.name -eq ((Split-path $results.physical_name[0]) + "\")} | %{ $_.Capacity }
+				
+				IF (!($TempDBDriveSize))
+				{
+					$TempDBDriveSize = Get-WMIObject Win32_LogicalDisk -filter "DeviceID = '$DeviceID'" -ComputerName $ServerName | %{ $_.Size }
+				}
+				
+				
 				#$CpuCount = Get-ProcessorCount -ServerName $ServerName
 				#As a best practice, we no longer assign the number of tempdb files to match the number of CPUs. We now just make Temdpb a total of 8 files
 				#If we need to grow beyond that, we will later after proving that we need more files. If so, files will be added in groups of 4.
 				$CpuCount = 8
 				$TempDBDriveSize = $TempDBDriveSize/1024 # in KB
-				$TempDBTotalSize = [Math]::Truncate($TempDBDriveSize * 0.60)
+				$TempDBTotalSize = [Math]::Truncate($TempDBDriveSize * 0.85)
 				$TempDBLogFileSize = [Math]::Truncate($TempDBTotalSize * 0.2)
 				$TempDBDataFilesTotalSize = [Math]::Truncate($TempDBTotalSize * 0.8)
 				$TempDBEachDataFileSize = [Math]::Truncate($TempDBDataFilesTotalSize/$CpuCount)
@@ -725,20 +733,31 @@ function Set-TempdbConfiguration
 				Write-Host "Total Number of Logical CPUs, hence total # of TempDB Data files :: $CpuCount"
 				Write-Host "TempDB Each Data file Size (KB):: $TempDBEachDataFileSize"
 
-				$query = $null
-				Get-Content ".\ConfigureTempdb\ConfigureSizeOfTempDB.sql" -ErrorAction Stop | Foreach-object{ $query = $query + "`n$_" }
-				$query = ($query -Replace "##TempDBEachDataFileSize##", $TempDBEachDataFileSize)
-				$query = ($query -Replace "##TempDBLogFileSize##", $TempDBLogFileSize)
-				Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $query -ErrorAction Stop -ConnectionTimeout 90 -QueryTimeout 999
+                $x = 1
+				foreach ($Result in $Results)
+                {
+                    $query = $null
 
+				    Get-Content ".\ConfigureTempdb\ConfigureSizeOfTempDB.sql" -ErrorAction Stop | Foreach-object{ $query = $query + "`n$_" }
+                    $query = ($query -Replace "##name##", $Result.Name)
+				    $query = ($query -Replace "##newname##", "tempdev$x")
+
+                    $query = ($query -Replace "##TempDBEachDataFileSize##", $TempDBEachDataFileSize)
+				    $query = ($query -Replace "##TempDBLogFileSize##", $TempDBLogFileSize)
+
+				    Invoke-Sqlcmd -ServerInstance $ServerInstance -Query $query -ErrorAction Stop -ConnectionTimeout 90 -QueryTimeout 999
+                    $x= $x + 1
+                }
 				$i = $CpuCount
 				Write-Host "Making sure that Tempdb has at least $CpuCount files"
-				While ($i -ge 2)
+				While ($i -ge $Results.Count)
 				{
 					$query = $null
-					$File = "\\" + $ServerName + "\" + $Results.physical_name.Replace(":\", "$\")
-					$File = Get-ItemProperty $File
-					$Path = $Results.physical_name.Replace($File.name, "tempdev$i")
+					#$File = "\\" + $ServerName + "\" + $Results.physical_name.Replace(":\", "$\")
+					#$File = Get-ItemProperty $File
+					#$Path = $Results.physical_name.Replace($Results.physical_name, $Results.physical_name + "tempdev$i")
+                    $Path = (Split-Path -Path $Results.physical_name[0]) + "\tempdev$i"
+        
 					Get-Content ".\ConfigureTempdb\ConfigureTempDBFiles.sql" -ErrorAction Stop | Foreach-object{ $query = $query + "`n$_" }
 					$query = ($query -Replace "##TempDBEachDataFileSize##", $TempDBEachDataFileSize)
 					$query = ($query -Replace "##tempdevi##", "tempdev$i")
@@ -825,4 +844,92 @@ function Enable-AlwaysOn
     {
         Write-host "AlwaysOn was not enabled for $ServerName".ToUpper() -ForegroundColor Yellow
     }
+}
+function Setup-DBMail
+{
+    #Code taken from http://www.sqlservercentral.com/articles/Database+Mail/74429/. Has been modified to be made into a function
+    # Step 1 - Set variables for mail options. 
+    param(
+        #[Parameter(AttributeValues)]
+        [String]
+        $ServerName,
+
+        #[Parameter(AttributeValues)]
+        [String]
+        $InstanceName,
+
+        #[Parameter(AttributeValues)]
+        [String]
+        $AccountName,
+
+        #[Parameter(AttributeValues)]
+        [String]
+        $OriginatingAddress,
+
+        #[Parameter(AttributeValues)]
+        [String]
+        $ReplyToAddress,
+
+        #[Parameter(AttributeValues)]
+        [String]
+        $SMTPServer,
+
+        #[Parameter(AttributeValues)]
+        [String]
+        $ProfileName,
+
+        #[Parameter(AttributeValues)]
+        [String]
+        $ProfileDescription
+    )
+    $ServerInstance = Get-SQLServerInstance -ServerName $ServerName -InstanceName $InstanceName
+<#
+    $sqlServer = 'YourServerName'
+    $accountName = 'dbMailDefaultAcct'
+    $accountDescription = 'Default dbMail Account'
+    $originatingAddress = "$sqlServer@yourDomain.com"
+    $replyToAddress = 'DO_NOT_REPLY@yourDomain.com'
+    $smtpServer = 'smtpServer.yourDomain.com'
+    $profileName = 'dbMailDefaultProfile'
+    $profileDescription = 'Default dbMail profile'
+#>
+    # Step 2 - Load the SMO assembly and create the server object, connecting to the server.
+    [System.Reflection.Assembly]::LoadWithPartialName('Microsoft.SqlServer.SMO') | Out-Null
+    $SQLServer = New-Object 'Microsoft.SqlServer.Management.SMO.Server' ($ServerInstance)
+
+    # Step 3 - Configure the SQL Server to enable Database Mail.
+    $SQLServer.Configuration.DatabaseMailEnabled.ConfigValue = 1
+    $SQLServer.Configuration.Alter()
+
+    # Step 4 - Alter mail system parameters if desired, this is an optional step.
+    #$SQLServer.Mail.ConfigurationValues.Item('LoggingLevel').Value = 1
+    #$SQLServer.Mail.ConfigurationValues.Item('LoggingLevel').Alter()
+
+    # Step 5 - Create the mail account. 
+    # ArgumentList contains the mail service, account name, description, 
+    # display name and email address.
+    $Account = New-Object -TypeName Microsoft.SqlServer.Management.SMO.Mail.MailAccount `
+        -Argumentlist $SQLServer.Mail, $AccountName, $AccountDescription, $ServerInstance, $OriginatingAddress 
+    $Account.ReplyToAddress = $ReplyToAddress 
+    $Account.Create()
+
+    # Step 6 - Set the mail server now that the account is created.
+    $Account.MailServers.Item($ServerInstance).Rename($SMTPServer)
+    $Account.Alter()
+
+    # Step 7 - Create a public default profile. 
+    # ArgumentList contains the mail service, profile name and description.
+    $MailProfile = New-Object -TypeName Microsoft.SqlServer.Management.SMO.Mail.MailProfile `
+        -ArgumentList $SQLServer.Mail, $ProfileName, $ProfileDescription
+    $MailProfile.Create()
+
+    # Step 8 - Associate the account to the profile and set the profile to public
+    $MailProfile.AddAccount($AccountName, 0)
+    $MailProfile.AddPrincipal('public', 1)
+    $MailProfile.Alter()
+
+    # Step 9 - Configure the SQL Agent to use dbMail.
+    $SQLServer.JobServer.AgentMailType = 'DatabaseMail'
+    $SQLServer.JobServer.DatabaseMailProfile = $ProfileName
+    $SQLServer.JobServer.Alter()
 }
