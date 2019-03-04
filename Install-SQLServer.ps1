@@ -143,7 +143,8 @@ param
 )
 Clear-Host
 $OutputPath = '.\MOF'
-$ConfigurationFile = "SQLServerConfiguration.json"
+if ($StandAlone){$ConfigurationFile = "SQLServerConfigurationStandAlone.json"}
+if ($FCI){$ConfigurationFile = "SQLServerConfigurationFCI.json"}
 $Configuration = (Get-Content $ConfigurationFile) -join "`n"  | ConvertFrom-Json
 
 $ConfigurationData = @{
@@ -162,7 +163,7 @@ $ConfigurationData = @{
 }
 
 #Push Modules to server to install SQL Server on. 
-$Destination = "\\" +$ComputerName +"\\c$\Program Files\WindowsPowerShell\Modules"
+$Destination = "\\" + $ComputerName +"\c$\Program Files\WindowsPowerShell\Modules"
 Copy-Item 'C:\Program Files\WindowsPowerShell\Modules\SQLServerDSC' -Destination $Destination -Recurse -Force 
 Copy-Item 'C:\Program Files\WindowsPowerShell\Modules\SecurityPolicyDsc' -Destination $Destination -Recurse -Force 
 

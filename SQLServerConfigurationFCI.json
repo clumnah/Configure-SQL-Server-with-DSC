@@ -1,0 +1,74 @@
+{
+    "InstallSQL" :
+	{
+        "UpdateEnabled" : "true",
+        "Features" : "SQLENGINE,REPLICATION,FULLTEXT,IS",
+        "InstanceName"  :  "MSSQLSERVER",        
+        "InstanceID" :  "MSSQLSERVER",  
+
+        "InstallSharedDir" : "C:\\Program Files\\Microsoft SQL Server",
+        "InstallSharedWOWDir" : "C:\\Program Files (x86)\\Microsoft SQL Server",
+        "InstanceDir" : "C:\\Program Files\\Microsoft SQL Server",
+        
+        "InstallSQLDataDir" : "E:\\Data",
+        "SQLUserDBDir" : "E:\\Data",
+        "SQLUserDBLogDir" : "L:\\Logs",
+        "SQLTempDBDir" : "T:\\Tempdb",
+        "SQLTempDBLogDir" : "L:\\Logs",
+        "SQLBackupDir"  :  "E:\\BACKUP",   
+        
+        "AgtSvcAccount" : "RUBRIKDEMO\\SQL$",
+        "ISSvcAccount" : "[PSCredential]",
+        "SQLSvcAccount" : "RUBRIKDEMO\\SQL$",
+        "FTSvcAccount" : "[PSCredential]" ,
+        
+        "SecurityMode" : "SQL",
+        "SAPwd" : "sa",
+        
+        "SQLCollation" : "SQL_Latin1_General_CP1_CI_AS",
+        "SQLSysAdminAccounts" : ["RUBRIKDEMO\\Rubrik$","RUBRIKDEMO\\SQL Admins", "RUBRIKDEMO\\SQL$", "RUBRIKDEMO\\Domain Admins"],
+        
+        "Paths"  : 
+        {
+            "2008R2":  
+                {
+                    "SourcePath"    :   "",
+                    "UpdateSource"  :   ""
+                },
+            "2012":
+                {
+                    "SourcePath"    :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2012\\iso",
+                    "UpdateSource"  :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2012\\Updates"
+                },
+            "2014":
+                {
+                    "SourcePath"    :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2014\\iso",
+                    "UpdateSource"  :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2014\\Updates"
+                },
+            "2016":
+                {
+                    "SourcePath"    :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2016\\iso",
+                    "UpdateSource"  :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2016\\Updates"
+                },
+            "2017":
+                {
+                    "SourcePath"    :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2017\\iso",
+                    "UpdateSource"  :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2017\\Updates"
+                }
+            } ,
+        "PsDscRunAsCredential": "$($env:UserDomain)\\$($env:UserName)",
+        "SourceCredential" : "$($env:UserDomain)\\$($env:UserName)",
+        "SuppressReboot" : 0,
+        "ForceReboot" : 1,
+        "DatabaseMail" :
+        {
+            "AccountName" : "Default",
+            "AccountDescription" : "",
+            "OriginatingAddress" : "SERVERL@DOMAIN.com",
+            "ReplyToAddress" : "DO_NOT_REPLY@DOMAIN.com",
+            "SMTPServer" : "SMTP.SERVER.DOMAIN.COM",
+            "ProfileName" : "Default",
+            "ProfileDescription" : ""
+        }
+    }  
+}
