@@ -99,6 +99,8 @@ Name:               Install SQL Server
 #Requires -Version 4
 #Requires -Modules PSDesiredStateConfiguration
 #Requires -Modules SQLServerDSC 
+#Requires -Modules SecurityPolicyDsc
+#Requires -Modules SQLServer
 
 [CmdletBinding(DefaultParametersetName="StandAlone")] 
 param
@@ -138,7 +140,7 @@ param
 
     # What version of SQL are you installing??
     [Parameter(Mandatory=$True)]
-    [ValidateSet("2008R2", "2012", "2014", "2016", "2017")]
+    [ValidateSet("2008R2", "2012", "2014", "2016", "2017","2019")]
     [String]$SQLVersion
 )
 Clear-Host

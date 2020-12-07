@@ -4,7 +4,7 @@ Configuration ConfigureSQLServerInstance
     Import-DscResource -Module SQLServerDSC
     Node $AllNodes.NodeName
     {
-        SqlServerMaxDop Set_SQLServerMaxDop_ToAuto
+        SqlMaxDop Set_SQLServerMaxDop_ToAuto
         {
             Ensure                  = 'Present'
             DynamicAlloc            = $true
@@ -13,7 +13,7 @@ Configuration ConfigureSQLServerInstance
             PsDscRunAsCredential    = $Node.PsDscRunAsCredential
             ProcessOnlyOnActiveNode = $true
         }
-        SqlServerMemory Set_SQLServerMaxMemory_ToAuto
+        SqlMemory Set_SQLServerMaxMemory_ToAuto
         {
             Ensure                  = 'Present'
             DynamicAlloc            = $true

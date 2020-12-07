@@ -10,50 +10,55 @@
         "InstallSharedWOWDir" : "C:\\Program Files (x86)\\Microsoft SQL Server",
         "InstanceDir" : "C:\\Program Files\\Microsoft SQL Server",
         
-        "InstallSQLDataDir" : "C:\\Mounts\\SQL",
-        "SQLUserDBDir" : "C:\\Mounts\\SQL\\DATA",
-        "SQLUserDBLogDir" : "C:\\Mounts\\SQL\\LOGS",
-        "SQLTempDBDir" : "C:\\Mounts\\SQL\\Tempdb",
-        "SQLTempDBLogDir" : "C:\\Mounts\\SQL\\LOGS",
-        "SQLBackupDir"  :  "C:\\Mounts\\SQL\\BACKUP",   
+        "InstallSQLDataDir" : "c:\\mnt\\mssql",
+        "SQLUserDBDir" : "c:\\mnt\\DATA",
+        "SQLUserDBLogDir" : "c:\\mnt\\LOGS",
+        "SQLTempDBDir" : "c:\\mnt\\Tempdb",
+        "SQLTempDBLogDir" : "c:\\mnt\\LOGS",
+        "SQLBackupDir"  :  "c:\\mnt\\BACKUP",   
         
-        "AgtSvcAccount" : "RUBRIKDEMO\\SQL$",
+        "AgtSvcAccount" : "HOME\\SQL$",
         "ISSvcAccount" : "[PSCredential]",
-        "SQLSvcAccount" : "RUBRIKDEMO\\SQL$",
+        "SQLSvcAccount" : "HOME\\SQL$",
         "FTSvcAccount" : "[PSCredential]" ,
         
         "SecurityMode" : "SQL",
         "SAPwd" : "sa",
         
         "SQLCollation" : "SQL_Latin1_General_CP1_CI_AS",
-        "SQLSysAdminAccounts" : ["RUBRIKDEMO\\Rubrik$","RUBRIKDEMO\\SQL Admins", "RUBRIKDEMO\\SQL$", "RUBRIKDEMO\\Domain Admins"],
+        "SQLSysAdminAccounts" : ["HOME\\Rubrik$","HOME\\SQL Admins", "HOME\\SQL$", "HOME\\Domain Admins"],
         
         "Paths"  : 
         {
             "2008R2":  
                 {
-                    "SourcePath"    :   "",
-                    "UpdateSource"  :   ""
+                    "SourcePath"    :   "\\\\nuc1\\iso\\SQLServer\\2008R2\\iso",
+                    "UpdateSource"  :   "\\\\nuc1\\iso\\SQLServer\\2008R2\\Updates"
                 },
             "2012":
                 {
-                    "SourcePath"    :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2012\\iso",
-                    "UpdateSource"  :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2012\\Updates"
+                    "SourcePath"    :   "\\\\nuc1\\iso\\SQLServer\\2012\\iso",
+                    "UpdateSource"  :   "\\\\nuc1\\iso\\SQLServer\\2012\\Updates"
                 },
             "2014":
                 {
-                    "SourcePath"    :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2014\\iso",
-                    "UpdateSource"  :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2014\\Updates"
+                    "SourcePath"    :   "\\\\nuc1\\iso\\SQLServer\\2014\\iso",
+                    "UpdateSource"  :   "\\\\nuc1\\iso\\SQLServer\\2014\\Updates"
                 },
             "2016":
                 {
-                    "SourcePath"    :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2016\\iso",
-                    "UpdateSource"  :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2016\\Updates"
+                    "SourcePath"    :   "\\\\nuc1\\iso\\SQLServer\\2016\\iso",
+                    "UpdateSource"  :   "\\\\nuc1\\iso\\SQLServer\\2016\\Updates"
                 },
             "2017":
                 {
-                    "SourcePath"    :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2017\\iso",
-                    "UpdateSource"  :   "\\\\mgmt1-file1.rubrikdemo.com\\Software-Repo\\Microsoft\\SQL\\SQL Server 2017\\Updates"
+                    "SourcePath"    :   "\\\\nuc1\\iso\\SQLServer\\2017\\iso",
+                    "UpdateSource"  :   "\\\\nuc1\\iso\\SQLServer\\2017\\Updates"
+                },
+            "2019":
+                {
+                    "SourcePath"    :   "\\\\nuc1\\iso\\SQLServer\\2019\\iso",
+                    "UpdateSource"  :   "\\\\nuc1\\iso\\SQLServer\\2019\\Updates"
                 }
             } ,
         "PsDscRunAsCredential": "$($env:UserDomain)\\$($env:UserName)",
